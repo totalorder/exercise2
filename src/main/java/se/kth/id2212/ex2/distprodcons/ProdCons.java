@@ -21,7 +21,7 @@ public class ProdCons
         {
             LocateRegistry.createRegistry(1099);
         }
-        RemoteBuffer buffer = (RemoteBuffer) Naming.lookup("foo");
+        RemoteBuffer buffer = (RemoteBuffer) Naming.lookup("buffer");
         Thread consumerThread = new Thread(new Consumer(buffer));
         Thread producerThread = new Thread(new Producer(buffer, 100));
 
