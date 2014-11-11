@@ -6,19 +6,15 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
-public class ProdCons
-{
+public class ProdCons {
 
     public static void main(String[] args) throws RemoteException,
-            NotBoundException,
-            MalformedURLException
-    {
+                                                  NotBoundException,
+                                                  MalformedURLException {
         String host = args[0];
-        try
-        {
+        try {
             LocateRegistry.getRegistry(1099).list();
-        } catch (RemoteException e)
-        {
+        } catch (RemoteException e) {
             LocateRegistry.createRegistry(1099);
         }
         RemoteBuffer buffer = (RemoteBuffer) Naming.lookup("buffer");
@@ -28,12 +24,10 @@ public class ProdCons
         consumerThread.start();
         producerThread.start();
 
-        try
-        {
+        try {
             consumerThread.join();
             producerThread.join();
-        } catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

@@ -11,6 +11,7 @@ public class Consumer implements Runnable
         sum = 0;
     }
 
+    @Override
     public void run()
     {
         while (true)
