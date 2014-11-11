@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 @SuppressWarnings("serial")
 public class MyBuffer extends UnicastRemoteObject implements RemoteBuffer {
-    private static final int PORT_NUMBER = 1099;
+    private static final int REGISTRY_PORT_NUMBER = 1099;
     LinkedList<Integer> list = new LinkedList<>();
 
     public MyBuffer() throws RemoteException, MalformedURLException {
@@ -38,9 +38,9 @@ public class MyBuffer extends UnicastRemoteObject implements RemoteBuffer {
         try {
             
             try {
-                LocateRegistry.getRegistry(PORT_NUMBER).list();
+                LocateRegistry.getRegistry(REGISTRY_PORT_NUMBER).list();
             } catch (RemoteException e) {
-                LocateRegistry.createRegistry(PORT_NUMBER);
+                LocateRegistry.createRegistry(REGISTRY_PORT_NUMBER);
             }
             
             Naming.rebind("rmi://localhost/buffer", new MyBuffer());

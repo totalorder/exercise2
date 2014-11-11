@@ -24,6 +24,7 @@ public class MyClient extends UnicastRemoteObject implements ClientInterface
         return id;
     }
 
+    @Override
     public void receiveMsg(String msg)
     {
         System.out.println(msg);

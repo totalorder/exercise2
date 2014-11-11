@@ -8,8 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.StringTokenizer;
 
-public class Client
-{
+public class Client {
     private static final String USAGE = "java bankrmi.Client <bank_url>";
     private static final String DEFAULT_BANK_NAME = "Nordea";
     Account account;
@@ -17,70 +16,53 @@ public class Client
     private String bankname;
     String clientname;
 
-    static enum CommandName
-    {
+    static enum CommandName {
         newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
-    }
+    };
 
-    ;
-
-    public Client(String bankName)
-    {
+    public Client(String bankName) {
         this.bankname = bankName;
-        try
-        {
-            try
-            {
+        try {
+            try {
                 LocateRegistry.getRegistry(1099).list();
-            } catch (RemoteException e)
-            {
+            } catch (RemoteException e) {
                 LocateRegistry.createRegistry(1099);
             }
             bankobj = (Bank) Naming.lookup(bankname);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("The runtime failed: " + e.getMessage());
             System.exit(0);
         }
         System.out.println("Connected to bank: " + bankname);
     }
 
-    public Client()
-    {
+    public Client() {
         this(DEFAULT_BANK_NAME);
     }
 
-    public void run()
-    {
+    public void run() {
         BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
 
-        while (true)
-        {
+        while (true) {
             System.out.print(clientname + "@" + bankname + ">");
-            try
-            {
+            try {
                 String userInput = consoleIn.readLine();
                 execute(parse(userInput));
-            } catch (RejectedException re)
-            {
+            } catch (RejectedException re) {
                 System.out.println(re);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private Command parse(String userInput)
-    {
-        if (userInput == null)
-        {
+    private Command parse(String userInput) {
+        if (userInput == null) {
             return null;
         }
 
         StringTokenizer tokenizer = new StringTokenizer(userInput);
-        if (tokenizer.countTokens() == 0)
-        {
+        if (tokenizer.countTokens() == 0) {
             return null;
         }
 
@@ -89,17 +71,13 @@ public class Client
         float amount = 0;
         int userInputTokenNo = 1;
 
-        while (tokenizer.hasMoreTokens())
-        {
-            switch (userInputTokenNo)
-            {
+        while (tokenizer.hasMoreTokens()) {
+            switch (userInputTokenNo) {
                 case 1:
-                    try
-                    {
+                    try {
                         String commandNameString = tokenizer.nextToken();
                         commandName = CommandName.valueOf(CommandName.class, commandNameString);
-                    } catch (IllegalArgumentException commandDoesNotExist)
-                    {
+                    } catch (IllegalArgumentException commandDoesNotExist) {
                         System.out.println("Illegal command");
                         return null;
                     }
@@ -108,11 +86,9 @@ public class Client
                     userName = tokenizer.nextToken();
                     break;
                 case 3:
-                    try
-                    {
+                    try {
                         amount = Float.parseFloat(tokenizer.nextToken());
-                    } catch (NumberFormatException e)
-                    {
+                    } catch (NumberFormatException e) {
                         System.out.println("Illegal amount");
                         return null;
                     }
@@ -126,53 +102,44 @@ public class Client
         return new Command(commandName, userName, amount);
     }
 
-    void execute(Command command) throws RemoteException, RejectedException
-    {
-        if (command == null)
-        {
+    void execute(Command command) throws RemoteException, RejectedException {
+        if (command == null) {
             return;
         }
 
-        switch (command.getCommandName())
-        {
+        switch (command.getCommandName()) {
             case list:
-                try
-                {
-                    for (String accountHolder : bankobj.listAccounts())
-                    {
+                try {
+                    for (String accountHolder : bankobj.listAccounts()) {
                         System.out.println(accountHolder);
                     }
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                     return;
                 }
                 return;
             case quit:
-                System.exit(1);
+                System.exit(0);
             case help:
-                for (CommandName commandName : CommandName.values())
-                {
+                for (CommandName commandName : CommandName.values()) {
                     System.out.println(commandName);
                 }
                 return;
+                        
         }
 
         // all further commands require a name to be specified
         String userName = command.getUserName();
-        if (userName == null)
-        {
+        if (userName == null) {
             userName = clientname;
         }
 
-        if (userName == null)
-        {
+        if (userName == null) {
             System.out.println("name is not specified");
             return;
         }
 
-        switch (command.getCommandName())
-        {
+        switch (command.getCommandName()) {
             case newAccount:
                 clientname = userName;
                 bankobj.newAccount(userName);
@@ -185,18 +152,15 @@ public class Client
 
         // all further commands require a Account reference
         Account acc = bankobj.getAccount(userName);
-        if (acc == null)
-        {
+        if (acc == null) {
             System.out.println("No account for " + userName);
             return;
-        } else
-        {
+        } else {
             account = acc;
             clientname = userName;
         }
 
-        switch (command.getCommandName())
-        {
+        switch (command.getCommandName()) {
             case getAccount:
                 System.out.println(account);
                 break;
@@ -214,50 +178,41 @@ public class Client
         }
     }
 
-    private class Command
-    {
+    private class Command {
         private String userName;
         private float amount;
         private CommandName commandName;
 
-        private String getUserName()
-        {
+        private String getUserName() {
             return userName;
         }
 
-        private float getAmount()
-        {
+        private float getAmount() {
             return amount;
         }
 
-        private CommandName getCommandName()
-        {
+        private CommandName getCommandName() {
             return commandName;
         }
 
-        private Command(Client.CommandName commandName, String userName, float amount)
-        {
+        private Command(Client.CommandName commandName, String userName, float amount) {
             this.commandName = commandName;
             this.userName = userName;
             this.amount = amount;
         }
     }
 
-    public static void main(String[] args)
-    {
-        if ((args.length > 1) || (args.length > 0 && args[0].equals("-h")))
-        {
+    public static void main(String[] args) {
+        if ((args.length > 1) || (args.length > 0 && args[0].equals("-h"))) {
             System.out.println(USAGE);
             System.exit(1);
         }
 
         String bankName;
-        if (args.length > 0)
-        {
+        if (args.length > 0) {
             bankName = args[0];
             new Client(bankName).run();
-        } else
-        {
+        } else {
             new Client().run();
         }
     }

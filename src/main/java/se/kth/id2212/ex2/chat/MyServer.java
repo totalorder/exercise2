@@ -9,73 +9,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class MyServer extends UnicastRemoteObject implements ServerInterface
-{
+public class MyServer extends UnicastRemoteObject implements ServerInterface {
+    private static final int REGISTRY_PORT_NUMBER = 1099;
     private List<ClientInterface> clientTable = new ArrayList<>();
 
-    public MyServer() throws RemoteException, MalformedURLException
-    {
+    public MyServer() throws RemoteException, MalformedURLException {
         super();
-        try
-        {
-            LocateRegistry.getRegistry(1099).list();
-        } catch (RemoteException e)
-
-        {
-            LocateRegistry.createRegistry(1099);
-        }
-        Naming.rebind("rmi://localhost/chat", this);
     }
 
-    public List<ClientInterface> getClients()
-    {
+    @Override
+    public List<ClientInterface> getClients() {
         return (clientTable);
     }
 
-    public void registerClient(ClientInterface client) throws RemoteException
-    {
-        if (clientTable.contains(client))
-        {
+    @Override
+    public void registerClient(ClientInterface client) throws RemoteException {
+        if (clientTable.contains(client)) {
             throw new RemoteException("client already registered");
         }
         clientTable.add(client);
     }
 
-    public void unregisterClient(ClientInterface client) throws RemoteException
-    {
-        if (!clientTable.contains(client))
-        {
+    @Override
+    public void unregisterClient(ClientInterface client) throws RemoteException {
+        if (!clientTable.contains(client)) {
             throw new RemoteException("client not registered");
         }
         clientTable.remove(client);
     }
 
-    public void broadcastMsg(String msg) throws RemoteException
-    {
-        for (ClientInterface client : clientTable)
-        {
-            try
-            {
+    @Override
+    public void broadcastMsg(String msg) throws RemoteException {
+        for (ClientInterface client : clientTable) {
+            try {
                 client.receiveMsg(msg);
-            } catch (RemoteException re)
-            {
+            } catch (RemoteException re) {
                 re.printStackTrace();
             }
         }
     }
 
-    public static void main(String[] args)
-    {
-        try
-        {
-            new MyServer();
-        } catch (RemoteException re)
-        {
+    public static void main(String[] args) {
+        try {
+            
+            try {
+                LocateRegistry.getRegistry(REGISTRY_PORT_NUMBER).list();
+            } catch (RemoteException e) {
+                LocateRegistry.createRegistry(REGISTRY_PORT_NUMBER);
+            }
+            Naming.rebind("rmi://localhost/chat", new MyServer());
+            
+        } catch (RemoteException | MalformedURLException re) {
             System.out.println(re);
-            System.exit(1);
-        } catch (MalformedURLException me)
-        {
-            System.out.println(me);
             System.exit(1);
         }
     }
