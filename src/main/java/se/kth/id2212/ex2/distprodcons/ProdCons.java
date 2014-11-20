@@ -11,7 +11,6 @@ public class ProdCons {
     public static void main(String[] args) throws RemoteException,
                                                   NotBoundException,
                                                   MalformedURLException {
-        String host = args[0];
         try {
             LocateRegistry.getRegistry(1099).list();
         } catch (RemoteException e) {
