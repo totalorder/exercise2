@@ -8,7 +8,13 @@ Without this configuration present, some functionality in the IDE may be limited
 -->
     <config-data xmlns="http://www.netbeans.org/ns/maven-config-data/1">
         <configurations>
+            <configuration id="bank-client" profiles=""/>
+            <configuration id="bank-server" profiles=""/>
+            <configuration id="chat-client-axel" profiles=""/>
+            <configuration id="chat-client-stina" profiles=""/>
+            <configuration id="chat-server" profiles=""/>
             <configuration id="prodcons-client" profiles=""/>
+            <configuration id="prodcons-server" profiles=""/>
         </configurations>
     </config-data>
 </project-shared-configuration>
