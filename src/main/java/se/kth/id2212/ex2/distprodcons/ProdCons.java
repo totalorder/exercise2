@@ -11,11 +11,6 @@ public class ProdCons {
     public static void main(String[] args) throws RemoteException,
                                                   NotBoundException,
                                                   MalformedURLException {
-        try {
-            LocateRegistry.getRegistry(1099).list();
-        } catch (RemoteException e) {
-            LocateRegistry.createRegistry(1099);
-        }
         RemoteBuffer buffer = (RemoteBuffer) Naming.lookup("buffer");
         Thread consumerThread = new Thread(new Consumer(buffer));
         Thread producerThread = new Thread(new Producer(buffer, 100));
