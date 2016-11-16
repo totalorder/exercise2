@@ -23,11 +23,6 @@ public class Client {
     public Client(String bankName) {
         this.bankname = bankName;
         try {
-            try {
-                LocateRegistry.getRegistry(1099).list();
-            } catch (RemoteException e) {
-                LocateRegistry.createRegistry(1099);
-            }
             bankobj = (Bank) Naming.lookup(bankname);
         } catch (Exception e) {
             System.out.println("The runtime failed: " + e.getMessage());

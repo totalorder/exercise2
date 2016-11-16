@@ -37,13 +37,6 @@ public class MyClient extends UnicastRemoteObject implements ClientInterface
         String myId = args[0];
         MyClient me = new MyClient(myId);
 
-        try
-        {
-            LocateRegistry.getRegistry(1099).list();
-        } catch (RemoteException e)
-        {
-            LocateRegistry.createRegistry(1099);
-        }
         ServerInterface server =
                 (ServerInterface) Naming.lookup("rmi://localhost/chat");
         server.registerClient(me);
