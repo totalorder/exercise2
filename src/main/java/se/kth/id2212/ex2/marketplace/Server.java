@@ -1,24 +1,27 @@
-package se.kth.id2212.ex2.bankrmi;
+package se.kth.id2212.ex2.marketplace;
+
+import se.kth.id2212.ex2.bankrmi.Bank;
+import se.kth.id2212.ex2.bankrmi.BankImpl;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
 public class Server {
-    private static final String USAGE = "java bankrmi.Server <bank_rmi_url>";
-    private static final String BANK = "Nordea";
+    private static final String USAGE = "java marketplace.Server <bank_rmi_url>";
+    private static final String MARKETPLACE = "Blocket";
 
-    public Server(String bankName) {
+    public Server(String marketplaceName) {
         try {
-            Bank bankobj = new BankImpl(bankName);
+            Marketplace marketplace = new MarketplaceImpl(marketplaceName);
             // Register the newly created object at rmiregistry.
             try {
                 LocateRegistry.getRegistry(1099).list();
             } catch (RemoteException e) {
                 LocateRegistry.createRegistry(1099);
             }
-            Naming.rebind(bankName, bankobj);
-            System.out.println(bankName + " is ready.");
+            Naming.rebind(marketplaceName, marketplace);
+            System.out.println(marketplaceName + " is ready.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -30,13 +33,13 @@ public class Server {
             System.exit(1);
         }
 
-        String bankName;
+        String marketplaceName;
         if (args.length > 0) {
-            bankName = args[0];
+            marketplaceName = args[0];
         } else {
-            bankName = BANK;
+            marketplaceName = MARKETPLACE;
         }
 
-        new Server(bankName);
+        new Server(marketplaceName);
     }
 }
