@@ -19,13 +19,14 @@ import java.util.StringTokenizer;
  * When an item is sold, or a wished item becomes available, the user will be notified
  */
 public class ClientImpl extends UnicastRemoteObject implements Client {
-    private static final String USAGE = "java marketplace.Client <user_name> [<marketplace_url>] [<bank_url>]";
+    private static final String USAGE = "java marketplace.Client <user_name> <password> [<marketplace_url>] [<bank_url>]";
     private static final String DEFAULT_MARKETPLACE_NAME = "Blocket";
     private static final String DEFAULT_BANK_NAME = "Nordea";
     private Account account;
     private Marketplace marketplace;
     private String marketplaceName;
-    private String userName;
+    private String username;
+    private String bankName;
 
     @Override
     public void onItemSoldCallback(Item item) throws RemoteException {
@@ -42,21 +43,41 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
         return account;
     }
 
+    @Override
+    public String getUsername() throws RemoteException {
+        return username;
+    }
+
+    @Override
+    public String getBankName() throws RemoteException {
+        return bankName;
+    }
+
     static enum CommandName {
-        sell, buy, list, wish, balance, quit, help;
+        sell, buy, list, wish, balance, history, quit, help;
     };
 
-    public ClientImpl(final String userName, final String marketplaceName, final String bankName) throws RemoteException {
-        this(userName, marketplaceName);
+    public ClientImpl(final String username, final String password, final String marketplaceName, final String bankName) throws RemoteException {
+        this(marketplaceName);
+        this.username = username;
+        this.bankName = bankName;
         try {
             // Connect to the bank and get or create a new account (with a $5000 bonus if new)
             final Bank bank = (Bank) Naming.lookup(bankName);
-            Account existingAccount = bank.getAccount(userName);
+            Account existingAccount = bank.getAccount(username);
             if (existingAccount == null) {
-                existingAccount = bank.newAccount(userName);
+                existingAccount = bank.newAccount(username);
                 existingAccount.deposit(5000);
             }
             this.account = existingAccount;
+
+            if (marketplace.registerUser(username, password)) {
+                System.out.println("Registered user " + username);
+            }
+            if (!marketplace.login(this, username, password)) {
+                System.out.println("Incorrect username/password!");
+                System.exit(0);
+            }
         } catch (Exception e) {
             System.out.println("The runtime failed: " + e.getMessage());
             System.exit(0);
@@ -64,9 +85,8 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
         System.out.println("Connected to bank: " + bankName);
     }
 
-    public ClientImpl(final String userName, final String marketplaceName) throws RemoteException {
+    public ClientImpl(final String marketplaceName) throws RemoteException {
         super();
-        this.userName = userName;
         this.marketplaceName = marketplaceName;
         try {
             // Connect to the marketplace
@@ -78,8 +98,12 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
         System.out.println("Connected to marketplace: " + this.marketplaceName);
     }
 
-    public ClientImpl(final String userName) throws RemoteException {
-        this(userName, DEFAULT_MARKETPLACE_NAME, DEFAULT_BANK_NAME);
+    public ClientImpl(final String username, final String password) throws RemoteException {
+        this(username, password, DEFAULT_MARKETPLACE_NAME, DEFAULT_BANK_NAME);
+    }
+
+    public ClientImpl(final String username, final String password, final String marketplaceName) throws RemoteException {
+        this(username, password, marketplaceName, DEFAULT_BANK_NAME);
     }
 
     public void run() {
@@ -87,7 +111,7 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
 
         // Read from stdin until the user types "quit"
         while (true) {
-            System.out.print(userName + "@" + marketplaceName + ">");
+            System.out.print(username + "@" + marketplaceName + ">");
             try {
                 String userInput = consoleIn.readLine();
                 execute(parse(userInput));
@@ -156,7 +180,7 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
         switch (command.getCommandName()) {
             case list:
                 try {
-                    marketplace.listItemsForSale().forEach(System.out::println);
+                    marketplace.listItemsForSale(this).forEach(System.out::println);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -190,6 +214,9 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
             case balance:
                 System.out.println("Balance: $" + account.getBalance());
                 break;
+            case history:
+                System.out.println("History: " + marketplace.getHistory(this));
+                break;
             default:
                 System.out.println("Illegal command");
         }
@@ -217,19 +244,20 @@ public class ClientImpl extends UnicastRemoteObject implements Client {
     }
 
     public static void main(String[] args) {
-        if ((args.length > 3) || args.length < 1 || (args.length > 0 && args[0].equals("-h"))) {
+        if ((args.length > 4) || args.length < 2 || (args.length > 0 && args[0].equals("-h"))) {
             System.out.println(USAGE);
             System.exit(1);
         }
 
-        String userName = args[0];
+        String username = args[0];
+        String password = args[1];
         try {
-            if (args.length == 1) {
-                new ClientImpl(userName).run();
-            } else if (args.length == 2) {
-                new ClientImpl(userName, args[1]).run();
+            if (args.length == 2) {
+                new ClientImpl(username, password).run();
             } else if (args.length == 3) {
-                new ClientImpl(userName, args[1], args[2]).run();
+                new ClientImpl(username, password, args[2]).run();
+            } else if (args.length == 4) {
+                new ClientImpl(username, password, args[2], args[3]).run();
             }
         } catch (RemoteException e) {
             e.printStackTrace();

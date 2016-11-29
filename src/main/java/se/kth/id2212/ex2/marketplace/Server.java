@@ -1,11 +1,12 @@
 package se.kth.id2212.ex2.marketplace;
 
-import se.kth.id2212.ex2.bankrmi.Bank;
-import se.kth.id2212.ex2.bankrmi.BankImpl;
+import se.kth.id2212.ex2.db.JdbcUtil;
+import se.kth.id2212.ex2.db.TransactionManager;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.sql.Connection;
 
 public class Server {
     private static final String USAGE = "java marketplace.Server <bank_rmi_url>";
@@ -13,7 +14,13 @@ public class Server {
 
     public Server(String marketplaceName) {
         try {
-            Marketplace marketplace = new MarketplaceImpl(marketplaceName);
+            final Connection connection = JdbcUtil.getConnection();
+            final TransactionManager transactionManager = new TransactionManager(connection);
+            final UserStore userStore = new UserStore();
+            final ItemStore itemStore = new ItemStore();
+            final HistoryStore historyStore = new HistoryStore();
+            final Marketplace marketplace = new MarketplaceImpl(
+                marketplaceName, transactionManager, userStore, itemStore, historyStore);
             // Register the newly created object at rmiregistry.
             try {
                 LocateRegistry.getRegistry(1099).list();

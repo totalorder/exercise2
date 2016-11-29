@@ -14,10 +14,14 @@ public class TransactionManager {
     this.connectionLock = new ReentrantLock();
   }
 
-  public Transaction open() throws SQLException {
+  public Tx open() {
     connectionLock.lock();
-    connection.setAutoCommit(false);
-    return new Transaction(connection, connectionLock);
+    try {
+      connection.setAutoCommit(false);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    return new Tx(connection, connectionLock);
   }
 
   public void close() throws SQLException {

@@ -18,14 +18,15 @@ mvn package
 
 ## Start bank on default name Nordea
 ```
-java -cp target/ex2-1.0-SNAPSHOT.jar se.kth.id2212.ex2.bankrmi.Server
+./run_bank.sh
 ```
 
 ## Start marketplace on default name Blocket
 ```
-java -cp target/u1-1.0-SNAPSHOT.jar org.deadlock.id2212.Main schedule2.txt 5001 127.0.0.1 5000
+./run_marketplace.sh
 ```
-## Start client(s) with chosen username
+## Start client(s) with chosen username and password
 ```
-java -cp target/ex2-1.0-SNAPSHOT.jar se.kth.id2212.ex2.marketplace.ClientImpl anton2
+./run_client user1 testtest
+./run_client user2 Testtest
 ```

@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import se.kth.id2212.ex2.db.JdbcUtil;
-import se.kth.id2212.ex2.db.Transaction;
+import se.kth.id2212.ex2.db.Tx;
 import se.kth.id2212.ex2.db.TransactionManager;
 
 import java.sql.Connection;
@@ -17,7 +17,7 @@ public class TransactionManagerTest {
 
 
   private TransactionManager transactionManager;
-  private Transaction tx = null;
+  private Tx tx = null;
 
   @Before
   public void setUp() throws Exception {
